@@ -18,7 +18,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
     public function testItShouldReturnValue()
     {
-        $appName = $this->_config->AppName;
+        $appName = $this->_config->appName;
         $this->assertEquals('MyApp', $appName);
     }
 }
