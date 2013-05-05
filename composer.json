@@ -11,7 +11,6 @@
         "corneltek/roller": "~1.8"
     },
     "autoload": {
-        "psr-0": { "Jace": "src/" },
-        "classmap": [ "tests/controllers" ]
+        "psr-0": { "Jace": "src/" }
     }
 }
