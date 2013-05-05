@@ -6,34 +6,44 @@ use Roller\Router;
 
 class Application
 {
+    const DEFAULT_CONTROLLER = 'index';
+    const DEFAULT_ACTION = 'index';
+
     protected $_config = [];
-    protected $_controllerName = '';
-    protected $_actionName = '';
+    protected $_controllerName = 'index';
+    protected $_actionName = 'index';
 
     public function run($filePath)
     {
         $this->_config = Config::factory($filePath);
+        $this->_route();
+        return $this->_dispatch();
+    }
 
+    protected function _route()
+    {
         $router = new Router();
-        $router->add('/:controllerName/:actionName', [$this, 'dispatch']);
+        $router->add('/:controllerName/:actionName', function ($controllerName, $actionName) {
+            $this->_controllerName = $controllerName;
+            $this->_actionName = $actionName;
+        });
 
         $requestUri = $_SERVER["REQUEST_URI"];
         $route = $router->dispatch($requestUri);
 
         if ($route) {
-            return $route();
+            $route();
         }
     }
 
-    public function dispatch($controllerName, $actionName)
+    protected function _dispatch()
     {
-        $this->_controllerName = $controllerName;
-        $this->_actionName = $actionName;
-
         $controllerClass = ucfirst(
             strtolower($this->_controllerName)
             ) . 'Controller';
-        $methodName = strtolower($this->_actionName) . 'Action';
+
+        $methodName = strtolower($this->_actionName)
+            . 'Action';
 
         Event::trigger('beforeDispatch');
         $controller = new $controllerClass();

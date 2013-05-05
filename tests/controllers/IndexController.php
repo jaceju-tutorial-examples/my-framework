@@ -2,9 +2,9 @@
 
 class IndexController
 {
-    public function testAction()
+    public function indexAction()
     {
-        return "TEST";
+        return "INDEX";
     }
 }
 
