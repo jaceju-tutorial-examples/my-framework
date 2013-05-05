@@ -10,6 +10,7 @@ class Application
     const DEFAULT_ACTION = 'index';
 
     protected $_config = [];
+    protected $_response = null;
     protected $_controllerName = 'index';
     protected $_actionName = 'index';
 
@@ -40,18 +41,25 @@ class Application
 
     protected function _dispatch()
     {
-        $controllerClass = ucfirst(
-            strtolower($this->_controllerName)
-            ) . 'Controller';
+        $this->_response = new Response();
+        try {
+            $controllerClass = ucfirst(
+                strtolower($this->_controllerName)
+                ) . 'Controller';
 
-        $methodName = strtolower($this->_actionName)
-            . 'Action';
+            $methodName = strtolower($this->_actionName)
+                . 'Action';
 
-        Event::trigger('beforeDispatch');
-        $controller = new $controllerClass();
-        Event::trigger('afterDispatch');
+            Event::trigger('beforeDispatch');
+            $controller = new $controllerClass();
+            $controller->setResponse($this->_response);
+            $this->_response->appendBody($controller->$methodName());
+            Event::trigger('afterDispatch');
 
-        return $controller->$methodName();
+        } catch (Exception $e) {
+            $this->_response->setException($e);
+        }
+        $this->_response->sendResponse();
     }
 
     public function getControllerName()
