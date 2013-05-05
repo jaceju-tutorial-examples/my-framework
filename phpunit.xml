@@ -1,5 +1,5 @@
 <phpunit bootstrap="./bootstrap.php"
-    color="false">
+    colors="true">
     <testsuite name="MyFramework">
         <directory>tests/*</directory>
     </testsuite>
