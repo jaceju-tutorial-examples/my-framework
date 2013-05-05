@@ -50,9 +50,10 @@ class Application
             $methodName = strtolower($this->_actionName)
                 . 'Action';
 
-            Event::trigger('beforeDispatch');
             $controller = new $controllerClass();
             $controller->setResponse($this->_response);
+
+            Event::trigger('beforeDispatch');
             $this->_response->appendBody($controller->$methodName());
             Event::trigger('afterDispatch');
 
