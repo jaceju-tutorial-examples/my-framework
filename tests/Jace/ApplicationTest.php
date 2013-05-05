@@ -11,37 +11,36 @@ class ApplicationTest extends \PHPUnit_Framework_TestCase
         $this->_app = new Application();
     }
 
-    public function testIndexController()
+    /**
+     * @dataProvider provider
+     */
+    public function testRouteToController(
+        $requestUri,
+        $expectControllerName,
+        $expectActionName,
+        $expectResult)
     {
         $_SERVER = [
-            "REQUEST_URI" => "/",
+            "REQUEST_URI" => $requestUri,
         ];
 
         ob_start();
         $this->_app->run(__DIR__ . '/config.ini');
         $controllerName = $this->_app->getControllerName();
         $actionName = $this->_app->getActionName();
-        $this->assertEquals('index', $controllerName);
-        $this->assertEquals('index', $actionName);
+        $this->assertEquals($expectControllerName, $controllerName);
+        $this->assertEquals($expectActionName, $actionName);
 
         $result = ob_get_clean();
-        $this->assertEquals('INDEX', $result);
+        $this->assertEquals($expectResult, $result);
     }
 
-    public function testTestController()
+    public function provider()
     {
-        $_SERVER = [
-            "REQUEST_URI" => "/test/abc",
+        return [
+            ["/", "index", "index", "INDEX"],
+            ["/test/abc", "test", "abc", "TEST"],
         ];
-
-        ob_start();
-        $this->_app->run(__DIR__ . '/config.ini');
-        $controllerName = $this->_app->getControllerName();
-        $actionName = $this->_app->getActionName();
-        $this->assertEquals('test', $controllerName);
-        $this->assertEquals('abc', $actionName);
-
-        $result = ob_get_clean();
-        $this->assertEquals('TEST', $result);
     }
+
 }
