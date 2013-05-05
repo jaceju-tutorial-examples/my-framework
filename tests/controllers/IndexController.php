@@ -1,6 +1,8 @@
 <?php
 
-class IndexController
+use Jace\Controller;
+
+class IndexController extends Controller
 {
     public function indexAction()
     {
