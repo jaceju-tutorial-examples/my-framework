@@ -15,6 +15,8 @@ class Application
 
     public function run($filePath)
     {
+        set_error_handler([$this, 'exceptionErrorHandler']);
+
         $this->_config = Config::factory($filePath);
         $this->_route();
         return $this->_dispatch();
@@ -60,5 +62,10 @@ class Application
     public function getActionName()
     {
         return $this->_actionName;
+    }
+
+    public static function exceptionErrorHandler($errNo, $errMsg, $errFile, $errLine )
+    {
+        throw new \ErrorException($errMsg, 0, $errNo, $errFile, $errLine);
     }
 }
