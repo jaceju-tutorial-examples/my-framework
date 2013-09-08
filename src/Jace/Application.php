@@ -2,65 +2,43 @@
 
 namespace Jace;
 
-use Roller\Router;
-
 class Application
 {
-    const DEFAULT_CONTROLLER = 'index';
-    const DEFAULT_ACTION = 'index';
-
-    protected $_config = [];
+    protected $_config = null;
+    protected $_controllerName = '';
+    protected $_actionName = '';
     protected $_response = null;
-    protected $_controllerName = 'index';
-    protected $_actionName = 'index';
 
     public function run($filePath)
     {
-        set_error_handler([$this, 'exceptionErrorHandler']);
-
         $this->_config = Config::factory($filePath);
         $this->_route();
-        return $this->_dispatch();
-    }
-
-    protected function _route()
-    {
-        $router = new Router();
-        $router->add('/:controllerName/:actionName', function ($controllerName, $actionName) {
-            $this->_controllerName = $controllerName;
-            $this->_actionName = $actionName;
-        });
-
-        $requestUri = $_SERVER["REQUEST_URI"];
-        $route = $router->dispatch($requestUri);
-
-        if ($route) {
-            $route();
-        }
+        $this->_dispatch();
     }
 
     protected function _dispatch()
     {
+        set_error_handler([$this, 'errorHandler']);
         $this->_response = new Response();
+        $this->_response->renderExceptions(true);
         try {
-            $controllerClass = ucfirst(
-                strtolower($this->_controllerName)
-                ) . 'Controller';
-
-            $methodName = strtolower($this->_actionName)
-                . 'Action';
-
+            $controllerClass = ucfirst(strtolower($this->_controllerName)) . 'Controller';
+            $actionName = ucfirst(strtolower($this->_actionName)) . 'Action';
             $controller = new $controllerClass();
-            $controller->setResponse($this->_response);
-
-            Event::trigger('beforeDispatch');
-            $this->_response->appendBody($controller->$methodName());
-            Event::trigger('afterDispatch');
-
-        } catch (Exception $e) {
+            Event::trigger('beforeDispatch', $this);
+            echo $controller->$actionName();
+        } catch (\Exception $e) {
             $this->_response->setException($e);
         }
+        //  ... close resources ...
+        Event::trigger('afterDispatch', $this);
+
         $this->_response->sendResponse();
+    }
+
+    public function errorHandler($errNo, $errMsg, $errFile, $errLine)
+    {
+        throw new \ErrorException($errMsg, 0, $errNo, $errFile, $errLine);
     }
 
     public function getControllerName()
@@ -73,8 +51,25 @@ class Application
         return $this->_actionName;
     }
 
-    public static function exceptionErrorHandler($errNo, $errMsg, $errFile, $errLine )
+    protected function _route()
     {
-        throw new \ErrorException($errMsg, 0, $errNo, $errFile, $errLine);
+        $router = new \Roller\Router();
+        $router->add('/', function () {
+            $this->_controllerName = 'index';
+            $this->_actionName = 'index';
+        });
+        $router->add('/:controllerName/:actionName',
+            function ($controllerName, $actionName) {
+                $this->_controllerName = $controllerName;
+                $this->_actionName = $actionName;
+            });
+
+        $requestUri = $_SERVER["REQUEST_URI"];
+        $route = $router->dispatch($requestUri);
+        if ($route !== false) {
+            return $route();
+        } else {
+            throw new \Exception('404');
+        }
     }
 }

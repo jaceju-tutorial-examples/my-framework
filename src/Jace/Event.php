@@ -6,16 +6,12 @@ class Event
 {
     private static $_callbacks = [];
 
-    private function __construct()
-    {}
-
     public static function register($name, $callback)
     {
-        if (!is_callable($callback)) {
-            throw new \Exception('Invalid callback!');
-        }
         $eventName = strtolower($name);
-        static::$_callbacks[$eventName][] = $callback;
+        if (is_callable($callback)) {
+            static::$_callbacks[$eventName][] = $callback;
+        }
     }
 
     public static function trigger($name, $source = null)
@@ -34,11 +30,5 @@ class Event
         if (isset(static::$_callbacks[$eventName])) {
             return static::$_callbacks[$eventName];
         }
-        return [];
-    }
-
-    public static function reset()
-    {
-        static::$_callbacks = [];
     }
 }

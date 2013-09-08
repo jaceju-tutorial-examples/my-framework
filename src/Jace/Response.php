@@ -13,7 +13,7 @@ class Response
         $this->_body[] = $body;
     }
 
-    public function setException(Exception $e)
+    public function setException(\Exception $e)
     {
         $this->_exceptions[] = $e;
     }
